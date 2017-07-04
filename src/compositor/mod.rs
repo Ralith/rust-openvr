@@ -32,8 +32,9 @@ impl<'a> Compositor<'a> {
         temp.split(|&x| x == b' ').map(|x| CString::new(x.to_vec()).expect("extension name contained null byte")).collect()
     }
 
-    pub fn vulkan_device_extensions_required(&self, physical_device: *mut VkPhysicalDevice_T) -> Vec<CString> {
-        let temp = unsafe {
+    /// Safety: physical_device must be a pointer to a valid VkPhysicalDevice
+    pub unsafe fn vulkan_device_extensions_required(&self, physical_device: *mut VkPhysicalDevice_T) -> Vec<CString> {
+        let temp = {
             let n = self.0.GetVulkanDeviceExtensionsRequired.unwrap()(physical_device, ptr::null_mut(), 0);
             let mut buffer: Vec<u8> = Vec::new();
             buffer.resize(n as usize, mem::uninitialized());
